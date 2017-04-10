@@ -154,6 +154,10 @@ save to change the home directory:
 
     # Disable 'git gc --auto' because GitLab already runs 'git gc' when needed
     sudo -u git -H git config --global gc.auto 0
+    
+    # Make sure .ssh directory exists
+    mkdir -p /home/git/.ssh
+    chown git:git /home/git/.ssh
 
 **Important Note:** Make sure to edit both `gitlab.yml` and `unicorn.rb` to match your setup.
 
