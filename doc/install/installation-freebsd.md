@@ -150,10 +150,10 @@ save to change the home directory:
 
     # Configure Git global settings for git user
     # 'autocrlf' is needed for the web editor
-    git config --global core.autocrlf input
+    sudo -u git -H git config --global core.autocrlf input
 
     # Disable 'git gc --auto' because GitLab already runs 'git gc' when needed
-    git config --global gc.auto 0
+    sudo -u git -H git config --global gc.auto 0
 
 **Important Note:** Make sure to edit both `gitlab.yml` and `unicorn.rb` to match your setup.
 
@@ -172,7 +172,7 @@ save to change the home directory:
 ### Initialize Database and Activate Advanced Features
 
     # make sure you are still using the root user and in /usr/local/www/gitlab
-    rake gitlab:setup RAILS_ENV=production
+    sudo -u git -H rake gitlab:setup RAILS_ENV=production
 
     # Type 'yes' to create the database tables.
 
@@ -192,18 +192,17 @@ Otherwise your secrets are exposed if one of your backups is compromised.
 
 Check if GitLab and its environment are configured correctly:
 
-    rake gitlab:env:info RAILS_ENV=production
+    sudo -u git -H rake gitlab:env:info RAILS_ENV=production
 
 ### Compile Assets
 
-    rake assets:precompile RAILS_ENV=production
+    sudo -u git -H npm install --production
+    sudo -u git -H bundle exec rake gitlab:assets:compile RAILS_ENV=production NODE_ENV=production
 
 ### Start Your GitLab Instance
 
     # use this command as root user to start gitlab:
     service gitlab start
-    # or this:
-    /usr/local/etc/rc.d/gitlab restart
 
 ## 7. Nginx
 
@@ -247,9 +246,7 @@ You should receive `syntax is okay` and `test is successful` messages. If you re
 
 To make sure you didn't miss anything run a more thorough check with:
 
-    su
-    su git
-    rake gitlab:check RAILS_ENV=production
+    sudo -u git -H bundle exec rake gitlab:check RAILS_ENV=production
 
 If all items are green, then congratulations on successfully installing GitLab!
 
