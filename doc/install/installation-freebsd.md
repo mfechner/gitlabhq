@@ -150,10 +150,10 @@ save to change the home directory:
 
     # Configure Git global settings for git user
     # 'autocrlf' is needed for the web editor
-    su -l git -c "git config --global core.autocrlf input"
+    sudo -u git -H git config --global core.autocrlf input
 
     # Disable 'git gc --auto' because GitLab already runs 'git gc' when needed
-    su -l git -C "git config --global gc.auto 0"
+    sudo -u git -H git config --global gc.auto 0
     
     # Make sure .ssh directory exists
     mkdir -p /home/git/.ssh
@@ -176,7 +176,7 @@ save to change the home directory:
 ### Initialize Database and Activate Advanced Features
 
     # make sure you are still using the root user and in /usr/local/www/gitlab
-    su -l git -c "rake gitlab:setup RAILS_ENV=production"
+    sudo -u git -H rake gitlab:setup RAILS_ENV=production
 
     # Type 'yes' to create the database tables.
 
@@ -184,7 +184,7 @@ save to change the home directory:
 
 **Note:** You can set the Administrator/root password by supplying it in environmental variable `GITLAB_ROOT_PASSWORD` as seen below. If you don't set the password (and it is set to the default one) please wait with exposing GitLab to the public internet until the installation is done and you've logged into the server the first time. During the first login you'll be forced to change the default password.
 
-    su -l git -c "rake gitlab:setup RAILS_ENV=production GITLAB_ROOT_PASSWORD=yourpassword"
+    rake gitlab:setup RAILS_ENV=production GITLAB_ROOT_PASSWORD=yourpassword
 
 ### Secure secrets.yml
 
@@ -196,12 +196,12 @@ Otherwise your secrets are exposed if one of your backups is compromised.
 
 Check if GitLab and its environment are configured correctly:
 
-    su -l git -c "rake gitlab:env:info RAILS_ENV=production"
+    sudo -u git -H rake gitlab:env:info RAILS_ENV=production
 
 ### Compile Assets
 
-    su -l git -c "npm install --production"
-    su -l git -c "bundle exec rake gitlab:assets:compile RAILS_ENV=production NODE_ENV=production"
+    sudo -u git -H npm install --production
+    sudo -u git -H bundle exec rake gitlab:assets:compile RAILS_ENV=production NODE_ENV=production
 
 ### Start Your GitLab Instance
 
@@ -250,7 +250,7 @@ You should receive `syntax is okay` and `test is successful` messages. If you re
 
 To make sure you didn't miss anything run a more thorough check with:
 
-    su -l git -c "bundle exec rake gitlab:check RAILS_ENV=production"
+    sudo -u git -H bundle exec rake gitlab:check RAILS_ENV=production
 
 If all items are green, then congratulations on successfully installing GitLab!
 
