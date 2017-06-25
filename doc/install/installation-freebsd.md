@@ -180,10 +180,16 @@ save to change the home directory:
 
 ### Initialize Database and Activate Advanced Features
 
+    # gitlab need write access to create a symlink
+    chown git /usr/local/share/gitlab-shell
+    
     # make sure you are still using the root user and in /usr/local/www/gitlab
     su -l git -c "cd /usr/local/www/gitlab && rake gitlab:setup RAILS_ENV=production"
-
+    
     # Type 'yes' to create the database tables.
+    
+    # Make sure we undo the temporary permission fix again
+    chown root /usr/local/share/gitlab-shell
 
     # When done you see 'Administrator account created:'
 
