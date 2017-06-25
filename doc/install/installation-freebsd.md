@@ -86,11 +86,23 @@ The current default version of PostgreSQL in the Portstree is 9.3 and is therefo
 
     # Try connecting to the new database with the new user
     psql -U git -d gitlabhq_production
+      
+    # Check if the `pg_trgm` extension is enabled by executing this SQL-statement:
+    SELECT true AS enabled
+    FROM pg_available_extensions
+    WHERE name = 'pg_trgm'
+    AND installed_version IS NOT NULL;
+
+    # If the extension is enabled this will produce the following output:
+    enabled
+    ---------
+     t
+    (1 row)
 
     # Quit the database session
     gitlabhq_production> \q
 
-    # Connect as superuser to gitlab db and enable pg_trgm extension
+    # Connect as superuser to gitlab db and enable pg_trgm extension if not installed
     psql -U pgsql -d gitlabhq_production -c "CREATE EXTENSION IF NOT EXISTS pg_trgm;"
 
 ## 3. Redis
@@ -150,10 +162,16 @@ save to change the home directory:
 
     # Configure Git global settings for git user
     # 'autocrlf' is needed for the web editor
-    git config --global core.autocrlf input
+    su -l git -c "git config --global core.autocrlf input"
 
     # Disable 'git gc --auto' because GitLab already runs 'git gc' when needed
-    git config --global gc.auto 0
+    su -l git -c "git config --global gc.auto 0"
+
+    # Enable packfile bitmaps
+    su -l git -c "git config --global repack.writeBitmaps true"
+
+    # Make sure .ssh directory exists
+    su -l git -c "mkdir -p /home/git/.ssh"
 
 **Important Note:** Make sure to edit both `gitlab.yml` and `unicorn.rb` to match your setup.
 
@@ -172,7 +190,7 @@ save to change the home directory:
 ### Initialize Database and Activate Advanced Features
 
     # make sure you are still using the root user and in /usr/local/www/gitlab
-    rake gitlab:setup RAILS_ENV=production
+    su -l git -c "cd /usr/local/www/gitlab && rake gitlab:setup RAILS_ENV=production"
 
     # Type 'yes' to create the database tables.
 
@@ -180,7 +198,7 @@ save to change the home directory:
 
 **Note:** You can set the Administrator/root password by supplying it in environmental variable `GITLAB_ROOT_PASSWORD` as seen below. If you don't set the password (and it is set to the default one) please wait with exposing GitLab to the public internet until the installation is done and you've logged into the server the first time. During the first login you'll be forced to change the default password.
 
-    rake gitlab:setup RAILS_ENV=production GITLAB_ROOT_PASSWORD=yourpassword
+    su -l git -c "cd /usr/local/www/gitlab && rake gitlab:setup RAILS_ENV=production GITLAB_ROOT_PASSWORD=yourpassword"
 
 ### Secure secrets.yml
 
@@ -192,11 +210,11 @@ Otherwise your secrets are exposed if one of your backups is compromised.
 
 Check if GitLab and its environment are configured correctly:
 
-    rake gitlab:env:info RAILS_ENV=production
+    su -l git -c "cd /usr/local/www/gitlab && rake gitlab:env:info RAILS_ENV=production"
 
 ### Compile Assets
 
-    rake assets:precompile RAILS_ENV=production
+    su -l git -c "cd /usr/local/www/gitlab && rake yarn:install gitlab:assets:clean gitlab:assets:compile RAILS_ENV=production NODE_ENV=production"
 
 ### Start Your GitLab Instance
 
@@ -248,8 +266,7 @@ You should receive `syntax is okay` and `test is successful` messages. If you re
 To make sure you didn't miss anything run a more thorough check with:
 
     su
-    su git
-    rake gitlab:check RAILS_ENV=production
+    su -l git -c "cd /usr/local/www/gitlab && rake gitlab:check RAILS_ENV=production"
 
 If all items are green, then congratulations on successfully installing GitLab!
 
@@ -292,12 +309,11 @@ Using a self-signed certificate is discouraged but if you must use it follow the
 
 1. Generate a self-signed SSL certificate:
 
-    ```
     mkdir -p /usr/local/etc/nginx/ssl/
     cd /usr/local/etc/nginx/ssl/
     openssl req -newkey rsa:2048 -x509 -nodes -days 3560 -out gitlab.crt -keyout gitlab.key
     chmod o-r gitlab.key
-    ```
+
 1. In the `config.yml` of gitlab-shell set `self_signed_cert` to `true`.
 
 ### Additional Markup Styles
@@ -324,6 +340,13 @@ If you want to connect the Redis server via socket, then use the "unix:" URL sch
 
     # example
     production: unix:/path/to/redis/socket
+
+Also you can use environment variables in the `config/resque.yml` file:
+
+    # example
+    production:
+      url: <%= ENV.fetch('GITLAB_REDIS_URL') %>
+
 
 ### Custom SSH Connection
 
