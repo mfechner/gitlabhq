@@ -80,30 +80,21 @@ The current default version of PostgreSQL in the Portstree is 9.3 and is therefo
     # create user git
     # ATTENTION: for first installation superuser rights are needed; after installation this should be removed!
     psql -d template1 -U pgsql -c "CREATE USER git CREATEDB SUPERUSER;"
+    # For PostgreSQL 9.6
+    # psql -d template1 -U postgres -c "CREATE USER git CREATEDB SUPERUSER;"
 
     # Create the GitLab production database & grant all privileges on database
     psql -d template1 -U pgsql -c "CREATE DATABASE gitlabhq_production OWNER git;"
+    # For PostgreSQL 9.6
+    # psql -d template1 -U postgres -c "CREATE DATABASE gitlabhq_production OWNER git;"
 
     # Try connecting to the new database with the new user
     psql -U git -d gitlabhq_production
       
-    # Check if the `pg_trgm` extension is enabled by executing this SQL-statement:
-    SELECT true AS enabled
-    FROM pg_available_extensions
-    WHERE name = 'pg_trgm'
-    AND installed_version IS NOT NULL;
-
-    # If the extension is enabled this will produce the following output:
-    enabled
-    ---------
-     t
-    (1 row)
-
-    # Quit the database session
-    gitlabhq_production> \q
-
     # Connect as superuser to gitlab db and enable pg_trgm extension if not installed
     psql -U pgsql -d gitlabhq_production -c "CREATE EXTENSION IF NOT EXISTS pg_trgm;"
+    # For PostgreSQL 9.6
+    # psql -U postgres -d gitlabhq_production -c "CREATE EXTENSION IF NOT EXISTS pg_trgm;"
 
 ## 3. Redis
 
