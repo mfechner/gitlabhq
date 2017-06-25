@@ -213,6 +213,12 @@ Check if GitLab and its environment are configured correctly:
 
     su -l git -c "cd /usr/local/www/gitlab && rake yarn:install gitlab:assets:clean gitlab:assets:compile RAILS_ENV=production NODE_ENV=production"
 
+### Remove Superuser rights from database user
+
+    psql -d template1 -U pgsql -c "ALTER USER git WITH NOSUPERUSER;"
+    # For PostgreSQL 9.6
+    # psql -d template1 -U postgres -c "ALTER USER git WITH NOSUPERUSER;"
+
 ### Start Your GitLab Instance
 
     # use this command as root user to start gitlab:
